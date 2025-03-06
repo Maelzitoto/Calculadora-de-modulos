@@ -21,6 +21,6 @@ def index():
         resultado = calcular_intersecao(conjuntos)
         
     return render_template("index.html", resultado=resultado)
-
+#testei
 if __name__ == "__main__":
     app.run(debug=True)
