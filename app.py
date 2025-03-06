@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template
+from calculos import *
 
 app = Flask(__name__)
 
@@ -17,12 +18,7 @@ def index():
             if elementos:
                 conjuntos.append(elementos)
         
-        if conjuntos:
-            intersecao = set.intersection(*conjuntos)
-            if intersecao:
-                resultado = ", ".join(sorted(intersecao))
-            else:
-                resultado = "Nenhum elemento em comum entre as listas."
+        resultado = calcular_intersecao(conjuntos)
         
     return render_template("index.html", resultado=resultado)
 
