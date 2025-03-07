@@ -14,12 +14,29 @@
     <button type="button" onclick="adicionarLista()">Adicionar Lista</button>
     <button type="button" onclick="salvarListas()">Salvar Listas</button>
     <button type="button" onclick="calcularIntersecao()">Calcular Interseção</button>
+    <button type="button" onclick="resetarTudo()">Resetar</button>
 
     <div id="resultado">
         <!-- O resultado será exibido aqui -->
     </div>
+    <div id="mensagem">
+        <!-- Mensagens de feedback serão exibidas aqui -->
+    </div>
 
     <script>
+        // Função para exibir mensagens de feedback
+        function exibirMensagem(mensagem, tipo) {
+            const divMensagem = document.getElementById("mensagem");
+            divMensagem.textContent = mensagem;
+            divMensagem.className = tipo; // Aplica a classe (sucesso ou erro)
+            divMensagem.style.display = "block"; // Exibe a mensagem
+
+            // Oculta a mensagem após 3 segundos
+            setTimeout(() => {
+                divMensagem.style.display = "none";
+            }, 3000);
+        }
+
         // Função para adicionar uma nova lista
         function adicionarLista() {
             const container = document.getElementById("lista-container");
@@ -49,6 +66,9 @@
 
             // Altera o ícone do botão
             botao.textContent = inputs[0].readOnly ? "✏️" : "✔️";
+
+            // Atualiza o localStorage após editar
+            salvarListas();
         }
 
         // Função para excluir uma lista
@@ -56,6 +76,7 @@
             const card = botao.closest(".lista-card");
             card.remove();
             salvarListas(); // Atualiza o localStorage após a exclusão
+            exibirMensagem("Lista excluída", "erro"); // Exibe mensagem de erro
         }
 
         // Função para salvar as listas no localStorage
@@ -80,7 +101,7 @@
             });
 
             localStorage.setItem("listasSalvas", JSON.stringify(listasSalvas));
-            alert("Listas salvas com sucesso!");
+            exibirMensagem("Listas salvas", "sucesso"); // Exibe mensagem de sucesso
         }
 
         // Função para carregar as listas salvas ao carregar a página
@@ -135,6 +156,22 @@
                 .catch((error) => {
                     console.error("Erro ao calcular a interseção:", error);
                 });
+        }
+
+        // Função para resetar tudo
+        function resetarTudo() {
+            // Limpa o conteúdo da div "resultado"
+            document.getElementById("resultado").innerText = "";
+
+            // Remove todas as listas da interface
+            const container = document.getElementById("lista-container");
+            container.innerHTML = "";
+
+            // Limpa o localStorage
+            localStorage.removeItem("listasSalvas");
+
+            // Exibe uma mensagem de feedback
+            exibirMensagem("Tudo foi resetado com sucesso!", "sucesso");
         }
 
         // Carrega as listas salvas ao carregar a página
