@@ -13,14 +13,10 @@
     </div>
     <button type="button" onclick="adicionarLista()">Adicionar Lista</button>
     <button type="button" onclick="salvarListas()">Salvar Listas</button>
-    <form id="calcular-form" method="POST" style="display: inline;">
-        <button type="submit">Calcular Interseção</button>
-    </form>
+    <button type="button" onclick="calcularIntersecao()">Calcular Interseção</button>
 
     <div id="resultado">
-        {% if resultado is not none %}
-            Resultado: {{ resultado }}
-        {% endif %}
+        <!-- O resultado será exibido aqui -->
     </div>
 
     <script>
@@ -33,8 +29,8 @@
                 <div class="header">
                     <input type="text" name="nome_lista" placeholder="Nome da Lista">
                     <div class="icons">
-                        <button class="edit-button" onclick="alternarEdicao(this)">✏️</button>
-                        <button class="delete-button" onclick="excluirLista(this)">❌</button>
+                        <button type="button" class="edit-button" onclick="alternarEdicao(this)">✏️</button>
+                        <button type="button" class="delete-button" onclick="excluirLista(this)">❌</button>
                     </div>
                 </div>
                 <textarea name="lista" placeholder="Insira os elementos separados por vírgula (ex: João, Maria, Pedro)"></textarea>
@@ -84,7 +80,7 @@
             });
 
             localStorage.setItem("listasSalvas", JSON.stringify(listasSalvas));
-         // alert("Listas salvas com sucesso!");
+            alert("Listas salvas com sucesso!");
         }
 
         // Função para carregar as listas salvas ao carregar a página
@@ -99,8 +95,8 @@
                     <div class="header">
                         <input type="text" name="nome_lista" placeholder="Nome da Lista" value="${lista.nome}" readonly>
                         <div class="icons">
-                            <button class="edit-button" onclick="alternarEdicao(this)">✏️</button>
-                            <button class="delete-button" onclick="excluirLista(this)">❌</button>
+                            <button type="button" class="edit-button" onclick="alternarEdicao(this)">✏️</button>
+                            <button type="button" class="delete-button" onclick="excluirLista(this)">❌</button>
                         </div>
                     </div>
                     <textarea name="lista" placeholder="Insira os elementos separados por vírgula (ex: João, Maria, Pedro)" readonly>${lista.valores}</textarea>
@@ -109,32 +105,40 @@
             });
         }
 
-        // Carrega as listas salvas ao carregar a página
-        carregarListasSalvas();
+        // Função para calcular a interseção
+        function calcularIntersecao() {
+            const cards = document.querySelectorAll(".lista-card");
+            const listas = [];
 
-        // Envia as listas salvas para o backend ao calcular a interseção
-        document.getElementById("calcular-form").addEventListener("submit", function (event) {
-            event.preventDefault();
-            const listasSalvas = JSON.parse(localStorage.getItem("listasSalvas")) || [];
-
-            // Cria um formulário dinâmico para enviar os dados
-            const formData = new FormData();
-            listasSalvas.forEach((lista) => {
-                formData.append("nome_lista", lista.nome);
-                formData.append("lista", lista.valores);
+            cards.forEach((card) => {
+                const valores = card.querySelector('textarea[name="lista"]').value;
+                if (valores.trim()) {
+                    listas.push(valores);
+                }
             });
 
             // Envia os dados para o backend
             fetch("/", {
                 method: "POST",
-                body: formData,
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                    lista: listas,
+                }),
             })
                 .then((response) => response.text())
                 .then((data) => {
-                    document.getElementById("resultado").innerHTML = data;
+                    // Exibe o resultado na div "resultado"
+                    document.getElementById("resultado").innerText = data;
+                })
+                .catch((error) => {
+                    console.error("Erro ao calcular a interseção:", error);
                 });
-        });
+        }
+
+        // Carrega as listas salvas ao carregar a página
+        carregarListasSalvas();
     </script>
-    <script src="{{ url_for('static', filename='index.js') }}"></script>
 </body>
 </html>

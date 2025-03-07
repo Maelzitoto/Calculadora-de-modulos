@@ -1,14 +1,12 @@
 from flask import Flask, request, render_template
-from calculos import *
+from calculos import calcular_intersecao  # Importe a função de cálculo
 
 app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    resultado = None
     if request.method == "POST":
-        # Recupera os valores dos inputs com o mesmo nome "lista" e "nome_lista"
-        nomes = request.form.getlist("nome_lista")
+        # Recupera os valores dos inputs com o mesmo nome "lista"
         listas = request.form.getlist("lista")
         
         conjuntos = []
@@ -18,9 +16,17 @@ def index():
             if elementos:
                 conjuntos.append(elementos)
         
+        # Calcula a interseção
         resultado = calcular_intersecao(conjuntos)
         
-    return render_template("index.html", resultado=resultado)
-#testei
+        # Retorna o resultado no formato desejado
+        if resultado:
+            return f"Resultado: {resultado}"
+        else:
+            return "Resultado: Nenhum elemento em comum entre as listas."
+    
+    # Renderiza o template apenas no GET
+    return render_template("index.html")
+
 if __name__ == "__main__":
     app.run(debug=True)
