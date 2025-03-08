@@ -76,6 +76,29 @@ button:hover {
     background-color: #0056b3;
 }
 
+/* Estilo específico para o botão de associatividade */
+button.btn-associatividade {
+    background-color: #28a745; /* Verde */
+}
+
+button.btn-associatividade:hover {
+    background-color: #218838; /* Verde mais escuro no hover */
+}
+
+/* Container para os botões de cálculo */
+.botoes-calculo {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Container para os botões de funcionalidades */
+.botoes-funcionalidades {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
 /* Estilos para centralizar o resultado */
 #resultado {
     text-align: center; /* Centraliza o texto horizontalmente */
@@ -118,4 +141,53 @@ button:hover {
     background-color: #f8d7da; /* Vermelho claro para erro */
     color: #721c24; /* Vermelho escuro para texto */
     border: 1px solid #f5c6cb;
+}
+
+/* Estilos para o menu suspenso (dropdown) */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.dropbtn:hover {
+    background-color: #0056b3;
+}
+
+.dropdown-conteudo {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 4px;
+}
+
+.dropdown-conteudo button {
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    background-color: #f9f9f9;
+    border: none;
+    color: #333;
+    cursor: pointer;
+}
+
+.dropdown-conteudo button:hover {
+    background-color: #ddd;
+}
+
+/* Mostrar o menu suspenso ao passar o mouse */
+.dropdown:hover .dropdown-conteudo {
+    display: block;
 }

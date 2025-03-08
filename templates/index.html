@@ -11,10 +11,20 @@
     <div id="lista-container" class="lista-container">
         <!-- Listas serão adicionadas aqui dinamicamente -->
     </div>
-    <button type="button" onclick="adicionarLista()">Adicionar Lista</button>
-    <button type="button" onclick="salvarListas()">Salvar Listas</button>
-    <button type="button" onclick="calcularIntersecao()">Calcular Interseção</button>
-    <button type="button" onclick="resetarTudo()">Resetar</button>
+
+    <!-- Botões principais -->
+    <div class="botoes-principais">
+        <button type="button" onclick="adicionarLista()">Adicionar Lista</button>
+        <button type="button" onclick="salvarListas()">Salvar Listas</button>
+        <button type="button" onclick="resetarTudo()">Resetar</button>
+        <div class="dropdown">
+            <button type="button" class="dropbtn">Fórmulas</button>
+            <div class="dropdown-conteudo">
+                <button type="button" onclick="calcularIntersecao()">Calcular Interseção</button>
+                <button type="button" onclick="verificarAssociatividade()">Verificar Associatividade</button>
+            </div>
+        </div>
+    </div>
 
     <div id="resultado">
         <!-- O resultado será exibido aqui -->
@@ -61,14 +71,11 @@
             const inputs = card.querySelectorAll("input, textarea");
 
             inputs.forEach((input) => {
-                input.readOnly = !input.readOnly;
+                input.readOnly = !input.readOnly; // Alterna entre modo de edição e visualização
             });
 
             // Altera o ícone do botão
             botao.textContent = inputs[0].readOnly ? "✏️" : "✔️";
-
-            // Atualiza o localStorage após editar
-            salvarListas();
         }
 
         // Função para excluir uma lista
@@ -134,28 +141,71 @@
             cards.forEach((card) => {
                 const valores = card.querySelector('textarea[name="lista"]').value;
                 if (valores.trim()) {
-                    listas.push(valores);
+                    // Converte a string de valores em um array de elementos
+                    const elementos = valores.split(",").map((item) => item.trim());
+                    listas.push(new Set(elementos)); // Usamos Set para remover duplicatas
                 }
             });
 
-            // Envia os dados para o backend
-            fetch("/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({
-                    lista: listas,
-                }),
-            })
-                .then((response) => response.text())
-                .then((data) => {
-                    // Exibe o resultado na div "resultado"
-                    document.getElementById("resultado").innerText = data;
-                })
-                .catch((error) => {
-                    console.error("Erro ao calcular a interseção:", error);
-                });
+            // Verifica se há listas válidas
+            if (listas.length < 2) {
+                exibirMensagem("Não foi possível calcular. Insira novas listas e atribua valores.", "erro");
+                return;
+            }
+
+            // Calcula a interseção das listas
+            let interseção = listas[0];
+            for (let i = 1; i < listas.length; i++) {
+                interseção = new Set([...interseção].filter((x) => listas[i].has(x)));
+            }
+
+            // Verifica se a interseção está vazia
+            if (interseção.size === 0) {
+                exibirMensagem("Não há interseção entre as listas.", "erro");
+                document.getElementById("resultado").innerText = ""; // Limpa o resultado
+            } else {
+                // Exibe o resultado
+                const resultado = `Resultado: ${Array.from(interseção).join(", ")}`;
+                document.getElementById("resultado").innerText = resultado;
+            }
+        }
+
+        // Função para calcular a união de dois conjuntos
+        function calcularUniao(conjuntoA, conjuntoB) {
+            const uniao = new Set([...conjuntoA, ...conjuntoB]); // Remove duplicatas automaticamente
+            return Array.from(uniao); // Converte o Set de volta para um array
+        }
+
+        // Função para verificar a associatividade da união de conjuntos
+        function verificarAssociatividade() {
+            const cards = document.querySelectorAll(".lista-card");
+            const listas = [];
+
+            // Coleta os valores das listas
+            cards.forEach((card) => {
+                const valores = card.querySelector('textarea[name="lista"]').value;
+                if (valores.trim()) {
+                    // Converte a string de valores em um array de elementos
+                    const elementos = valores.split(",").map((item) => item.trim());
+                    listas.push(new Set(elementos)); // Usamos Set para remover duplicatas
+                }
+            });
+
+            // Verifica se há listas válidas
+            if (listas.length < 2) {
+                exibirMensagem("Não foi possível calcular. Insira novas listas e atribua valores.", "erro");
+                return;
+            }
+
+            // Calcula a união de todas as listas
+            let uniaoTotal = listas[0];
+            for (let i = 1; i < listas.length; i++) {
+                uniaoTotal = calcularUniao(uniaoTotal, listas[i]);
+            }
+
+            // Exibe o resultado
+            const resultado = `Resultado: ${Array.from(uniaoTotal).join(", ")}`;
+            document.getElementById("resultado").innerText = resultado;
         }
 
         // Função para resetar tudo
