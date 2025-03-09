@@ -5,227 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interseção de Listas</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <script src="{{ url_for('static', filename='js/index.js') }}" defer></script>
 </head>
 <body>
     <h1>Interseção de Listas</h1>
-    <div id="lista-container" class="lista-container">
-        <!-- Listas serão adicionadas aqui dinamicamente -->
-    </div>
+    <form id="calcular-form" method="POST">
+        <input type="hidden" name="operacao" id="operacao" value="intersecao">
+        <div id="lista-container" class="lista-container">
+            <!-- Listas serão adicionadas aqui dinamicamente -->
+        </div>
 
-    <!-- Botões principais -->
-    <div class="botoes-principais">
-        <button type="button" onclick="adicionarLista()">Adicionar Lista</button>
-        <button type="button" onclick="salvarListas()">Salvar Listas</button>
-        <button type="button" onclick="resetarTudo()">Resetar</button>
-        <div class="dropdown">
-            <button type="button" class="dropbtn">Fórmulas</button>
-            <div class="dropdown-conteudo">
-                <button type="button" onclick="calcularIntersecao()">Calcular Interseção</button>
-                <button type="button" onclick="verificarAssociatividade()">Verificar Associatividade</button>
+        <!-- Botões principais -->
+        <div class="botoes-principais">
+            <button type="button" id="adicionar-lista">Adicionar Lista</button>
+            <button type="button" id="salvar-listas">Salvar Listas</button>
+            <button type="button" id="resetar-tudo">Resetar</button>
+            <div class="dropdown">
+                <button type="button" class="dropbtn">Fórmulas</button>
+                <div class="dropdown-conteudo">
+                    <button type="button" id="calcular-intersecao">Calcular Interseção</button>
+                    <button type="button" id="calcular-uniao">Calcular União</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="resultado">
-        <!-- O resultado será exibido aqui -->
-    </div>
-    <div id="mensagem">
-        <!-- Mensagens de feedback serão exibidas aqui -->
-    </div>
-
-    <script>
-        // Função para exibir mensagens de feedback
-        function exibirMensagem(mensagem, tipo) {
-            const divMensagem = document.getElementById("mensagem");
-            divMensagem.textContent = mensagem;
-            divMensagem.className = tipo; // Aplica a classe (sucesso ou erro)
-            divMensagem.style.display = "block"; // Exibe a mensagem
-
-            // Oculta a mensagem após 3 segundos
-            setTimeout(() => {
-                divMensagem.style.display = "none";
-            }, 3000);
-        }
-
-        // Função para adicionar uma nova lista
-        function adicionarLista() {
-            const container = document.getElementById("lista-container");
-            const novoCard = document.createElement("div");
-            novoCard.className = "lista-card";
-            novoCard.innerHTML = `
-                <div class="header">
-                    <input type="text" name="nome_lista" placeholder="Nome da Lista">
-                    <div class="icons">
-                        <button type="button" class="edit-button" onclick="alternarEdicao(this)">✏️</button>
-                        <button type="button" class="delete-button" onclick="excluirLista(this)">❌</button>
-                    </div>
-                </div>
-                <textarea name="lista" placeholder="Insira os elementos separados por vírgula (ex: João, Maria, Pedro)"></textarea>
-            `;
-            container.appendChild(novoCard);
-        }
-
-        // Função para alternar entre modo de edição e modo de visualização
-        function alternarEdicao(botao) {
-            const card = botao.closest(".lista-card");
-            const inputs = card.querySelectorAll("input, textarea");
-
-            inputs.forEach((input) => {
-                input.readOnly = !input.readOnly; // Alterna entre modo de edição e visualização
-            });
-
-            // Altera o ícone do botão
-            botao.textContent = inputs[0].readOnly ? "✏️" : "✔️";
-        }
-
-        // Função para excluir uma lista
-        function excluirLista(botao) {
-            const card = botao.closest(".lista-card");
-            card.remove();
-            salvarListas(); // Atualiza o localStorage após a exclusão
-            exibirMensagem("Lista excluída", "erro"); // Exibe mensagem de erro
-        }
-
-        // Função para salvar as listas no localStorage
-        function salvarListas() {
-            const cards = document.querySelectorAll(".lista-card");
-            const listasSalvas = [];
-
-            cards.forEach((card) => {
-                const nome = card.querySelector('input[name="nome_lista"]').value;
-                const valores = card.querySelector('textarea[name="lista"]').value;
-                listasSalvas.push({ nome, valores });
-
-                // Torna os campos não editáveis após salvar
-                const inputs = card.querySelectorAll("input, textarea");
-                inputs.forEach((input) => {
-                    input.readOnly = true;
-                });
-
-                // Altera o ícone do botão para "✏️"
-                const botaoEdicao = card.querySelector(".edit-button");
-                botaoEdicao.textContent = "✏️";
-            });
-
-            localStorage.setItem("listasSalvas", JSON.stringify(listasSalvas));
-            exibirMensagem("Listas salvas", "sucesso"); // Exibe mensagem de sucesso
-        }
-
-        // Função para carregar as listas salvas ao carregar a página
-        function carregarListasSalvas() {
-            const listasSalvas = JSON.parse(localStorage.getItem("listasSalvas")) || [];
-            const container = document.getElementById("lista-container");
-
-            listasSalvas.forEach((lista) => {
-                const novoCard = document.createElement("div");
-                novoCard.className = "lista-card";
-                novoCard.innerHTML = `
-                    <div class="header">
-                        <input type="text" name="nome_lista" placeholder="Nome da Lista" value="${lista.nome}" readonly>
-                        <div class="icons">
-                            <button type="button" class="edit-button" onclick="alternarEdicao(this)">✏️</button>
-                            <button type="button" class="delete-button" onclick="excluirLista(this)">❌</button>
-                        </div>
-                    </div>
-                    <textarea name="lista" placeholder="Insira os elementos separados por vírgula (ex: João, Maria, Pedro)" readonly>${lista.valores}</textarea>
-                `;
-                container.appendChild(novoCard);
-            });
-        }
-
-        // Função para calcular a interseção
-        function calcularIntersecao() {
-            const cards = document.querySelectorAll(".lista-card");
-            const listas = [];
-
-            cards.forEach((card) => {
-                const valores = card.querySelector('textarea[name="lista"]').value;
-                if (valores.trim()) {
-                    // Converte a string de valores em um array de elementos
-                    const elementos = valores.split(",").map((item) => item.trim());
-                    listas.push(new Set(elementos)); // Usamos Set para remover duplicatas
-                }
-            });
-
-            // Verifica se há listas válidas
-            if (listas.length < 2) {
-                exibirMensagem("Não foi possível calcular. Insira novas listas e atribua valores.", "erro");
-                return;
-            }
-
-            // Calcula a interseção das listas
-            let interseção = listas[0];
-            for (let i = 1; i < listas.length; i++) {
-                interseção = new Set([...interseção].filter((x) => listas[i].has(x)));
-            }
-
-            // Verifica se a interseção está vazia
-            if (interseção.size === 0) {
-                exibirMensagem("Não há interseção entre as listas.", "erro");
-                document.getElementById("resultado").innerText = ""; // Limpa o resultado
-            } else {
-                // Exibe o resultado
-                const resultado = `Resultado: ${Array.from(interseção).join(", ")}`;
-                document.getElementById("resultado").innerText = resultado;
-            }
-        }
-
-        // Função para calcular a união de dois conjuntos
-        function calcularUniao(conjuntoA, conjuntoB) {
-            const uniao = new Set([...conjuntoA, ...conjuntoB]); // Remove duplicatas automaticamente
-            return Array.from(uniao); // Converte o Set de volta para um array
-        }
-
-        // Função para verificar a associatividade da união de conjuntos
-        function verificarAssociatividade() {
-            const cards = document.querySelectorAll(".lista-card");
-            const listas = [];
-
-            // Coleta os valores das listas
-            cards.forEach((card) => {
-                const valores = card.querySelector('textarea[name="lista"]').value;
-                if (valores.trim()) {
-                    // Converte a string de valores em um array de elementos
-                    const elementos = valores.split(",").map((item) => item.trim());
-                    listas.push(new Set(elementos)); // Usamos Set para remover duplicatas
-                }
-            });
-
-            // Verifica se há listas válidas
-            if (listas.length < 2) {
-                exibirMensagem("Não foi possível calcular. Insira novas listas e atribua valores.", "erro");
-                return;
-            }
-
-            // Calcula a união de todas as listas
-            let uniaoTotal = listas[0];
-            for (let i = 1; i < listas.length; i++) {
-                uniaoTotal = calcularUniao(uniaoTotal, listas[i]);
-            }
-
-            // Exibe o resultado
-            const resultado = `Resultado: ${Array.from(uniaoTotal).join(", ")}`;
-            document.getElementById("resultado").innerText = resultado;
-        }
-
-        // Função para resetar tudo
-        function resetarTudo() {
-            // Limpa o conteúdo da div "resultado"
-            document.getElementById("resultado").innerText = "";
-
-            // Remove todas as listas da interface
-            const container = document.getElementById("lista-container");
-            container.innerHTML = "";
-
-            // Limpa o localStorage
-            localStorage.removeItem("listasSalvas");
-
-            // Exibe uma mensagem de feedback
-            exibirMensagem("Tudo foi resetado com sucesso!", "sucesso");
-        }
-
-        // Carrega as listas salvas ao carregar a página
-        carregarListasSalvas();
-    </script>
+        <div id="resultado">
+            <!-- O resultado será exibido aqui -->
+        </div>
+        <div id="mensagem">
+            <!-- Mensagens de feedback serão exibidas aqui -->
+        </div>
+    </form>
 </body>
 </html>

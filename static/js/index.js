@@ -1,3 +1,12 @@
+// Função para exibir mensagens de feedback
+function exibirMensagem(mensagem, tipo) {
+    const divMensagem = document.getElementById("mensagem");
+    divMensagem.textContent = mensagem;
+    divMensagem.className = tipo;
+    divMensagem.style.display = "block";
+    setTimeout(() => divMensagem.style.display = "none", 3000);
+}
+
 // Função para adicionar uma nova lista
 function adicionarLista() {
     const container = document.getElementById("lista-container");
@@ -7,13 +16,20 @@ function adicionarLista() {
         <div class="header">
             <input type="text" name="nome_lista" placeholder="Nome da Lista">
             <div class="icons">
-                <button class="edit-button" onclick="alternarEdicao(this)">✏️</button>
-                <button class="delete-button" onclick="excluirLista(this)">❌</button>
+                <button type="button" class="edit-button">✏️</button>
+                <button type="button" class="delete-button">❌</button>
             </div>
         </div>
         <textarea name="lista" placeholder="Insira os elementos separados por vírgula (ex: João, Maria, Pedro)"></textarea>
     `;
     container.appendChild(novoCard);
+
+    // Adiciona eventos aos botões dentro do novo card
+    const botaoEditar = novoCard.querySelector(".edit-button");
+    const botaoExcluir = novoCard.querySelector(".delete-button");
+
+    botaoEditar.addEventListener("click", () => alternarEdicao(botaoEditar));
+    botaoExcluir.addEventListener("click", () => excluirLista(botaoExcluir));
 }
 
 // Função para alternar entre modo de edição e modo de visualização
@@ -33,7 +49,8 @@ function alternarEdicao(botao) {
 function excluirLista(botao) {
     const card = botao.closest(".lista-card");
     card.remove();
-    salvarListas(); // Atualiza o localStorage após a exclusão
+    salvarListas();
+    exibirMensagem("Lista excluída", "erro");
 }
 
 // Função para salvar as listas no localStorage
@@ -58,7 +75,7 @@ function salvarListas() {
     });
 
     localStorage.setItem("listasSalvas", JSON.stringify(listasSalvas));
-    alert("Listas salvas com sucesso!");
+    exibirMensagem("Listas salvas", "sucesso");
 }
 
 // Função para carregar as listas salvas ao carregar a página
@@ -73,38 +90,97 @@ function carregarListasSalvas() {
             <div class="header">
                 <input type="text" name="nome_lista" placeholder="Nome da Lista" value="${lista.nome}" readonly>
                 <div class="icons">
-                    <button class="edit-button" onclick="alternarEdicao(this)">✏️</button>
-                    <button class="delete-button" onclick="excluirLista(this)">❌</button>
+                    <button type="button" class="edit-button">✏️</button>
+                    <button type="button" class="delete-button">❌</button>
                 </div>
             </div>
             <textarea name="lista" placeholder="Insira os elementos separados por vírgula (ex: João, Maria, Pedro)" readonly>${lista.valores}</textarea>
         `;
         container.appendChild(novoCard);
+
+        // Adiciona eventos aos botões dentro do novo card
+        const botaoEditar = novoCard.querySelector(".edit-button");
+        const botaoExcluir = novoCard.querySelector(".delete-button");
+
+        botaoEditar.addEventListener("click", () => alternarEdicao(botaoEditar));
+        botaoExcluir.addEventListener("click", () => excluirLista(botaoExcluir));
     });
 }
 
-// Carrega as listas salvas ao carregar a página
-carregarListasSalvas();
+// Função para calcular a interseção
+function calcularIntersecao() {
+    const cards = document.querySelectorAll(".lista-card");
+    const listas = [];
 
-// Envia as listas salvas para o backend ao calcular a interseção
-document.getElementById("calcular-form").addEventListener("submit", function (event) {
-    event.preventDefault();
-    const listasSalvas = JSON.parse(localStorage.getItem("listasSalvas")) || [];
-
-    // Cria um formulário dinâmico para enviar os dados
-    const formData = new FormData();
-    listasSalvas.forEach((lista) => {
-        formData.append("nome_lista", lista.nome);
-        formData.append("lista", lista.valores);
+    cards.forEach((card) => {
+        const valores = card.querySelector('textarea[name="lista"]').value;
+        if (valores.trim()) {
+            const elementos = valores.split(",").map((item) => item.trim());
+            listas.push(new Set(elementos));
+        }
     });
 
-    // Envia os dados para o backend
-    fetch("/", {
-        method: "POST",
-        body: formData,
-    })
-        .then((response) => response.text())
-        .then((data) => {
-            document.getElementById("resultado").innerHTML = data;
-        });
-});
+    if (listas.length < 2) {
+        exibirMensagem("Não foi possível calcular. Insira novas listas e atribua valores.", "erro");
+        return;
+    }
+
+    let interseção = listas[0];
+    for (let i = 1; i < listas.length; i++) {
+        interseção = new Set([...interseção].filter((x) => listas[i].has(x)));
+    }
+
+    if (interseção.size === 0) {
+        exibirMensagem("Não há interseção entre as listas.", "erro");
+        document.getElementById("resultado").innerText = "";
+    } else {
+        const resultado = `Resultado: ${Array.from(interseção).join(", ")}`;
+        document.getElementById("resultado").innerText = resultado;
+    }
+}
+
+// Função para calcular a união
+function calcularUniao() {
+    const cards = document.querySelectorAll(".lista-card");
+    const listas = [];
+
+    cards.forEach((card) => {
+        const valores = card.querySelector('textarea[name="lista"]').value;
+        if (valores.trim()) {
+            const elementos = valores.split(",").map((item) => item.trim());
+            listas.push(new Set(elementos));
+        }
+    });
+
+    if (listas.length < 2) {
+        exibirMensagem("Não foi possível calcular. Insira novas listas e atribua valores.", "erro");
+        return;
+    }
+
+    let uniaoTotal = listas[0];
+    for (let i = 1; i < listas.length; i++) {
+        uniaoTotal = new Set([...uniaoTotal, ...listas[i]]);
+    }
+
+    const resultado = `Resultado: ${Array.from(uniaoTotal).join(", ")}`;
+    document.getElementById("resultado").innerText = resultado;
+}
+
+// Função para resetar tudo
+function resetarTudo() {
+    document.getElementById("resultado").innerText = "";
+    const container = document.getElementById("lista-container");
+    container.innerHTML = "";
+    localStorage.removeItem("listasSalvas");
+    exibirMensagem("Tudo foi resetado com sucesso!", "sucesso");
+}
+
+// Event Listeners
+document.getElementById("adicionar-lista").addEventListener("click", adicionarLista);
+document.getElementById("salvar-listas").addEventListener("click", salvarListas);
+document.getElementById("resetar-tudo").addEventListener("click", resetarTudo);
+document.getElementById("calcular-intersecao").addEventListener("click", calcularIntersecao);
+document.getElementById("calcular-uniao").addEventListener("click", calcularUniao);
+
+// Carrega as listas salvas ao carregar a página
+document.addEventListener("DOMContentLoaded", carregarListasSalvas);
