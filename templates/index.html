@@ -8,7 +8,7 @@
     <script src="{{ url_for('static', filename='js/index.js') }}" defer></script>
 </head>
 <body>
-    <h1>Interseção de Listas</h1>
+    <h1>Calculadora de Modulos</h1>
     <form id="calcular-form" method="POST">
         <input type="hidden" name="operacao" id="operacao" value="intersecao">
         <div id="lista-container" class="lista-container">
@@ -34,6 +34,10 @@
         </div>
         <div id="mensagem">
             <!-- Mensagens de feedback serão exibidas aqui -->
+        </div>
+        <div class="footer">
+            <p class="footer-text">Desenvolvido por Você</p>
+            <img src="/static/images/icon.png" alt="Ícone" class="footer-icon">
         </div>
     </form>
 </body>
