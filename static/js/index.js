@@ -166,6 +166,79 @@ function calcularUniao() {
     document.getElementById("resultado").innerText = resultado;
 }
 
+// Função para exibir o modal do conjunto universo
+function exibirModalUniverso() {
+    const modal = document.getElementById("modal-universo");
+    modal.style.display = "block";
+}
+
+// Função para fechar o modal do conjunto universo
+function fecharModalUniverso() {
+    const modal = document.getElementById("modal-universo");
+    modal.style.display = "none";
+}
+
+// Função para calcular a Lei de Morgan
+function calcularLeiDeMorgan() {
+    const cards = document.querySelectorAll(".lista-card");
+    const listas = [];
+
+    cards.forEach((card) => {
+        const valores = card.querySelector('textarea[name="lista"]').value;
+        if (valores.trim()) {
+            const elementos = valores.split(",").map((item) => item.trim());
+            listas.push(new Set(elementos));
+        }
+    });
+
+    if (listas.length !== 2) {
+        exibirMensagem("Erro: A Lei de Morgan só pode ser aplicada a exatamente duas listas.", "erro");
+        return;
+    }
+
+    // Exibir o modal para o usuário definir o conjunto universo
+    exibirModalUniverso();
+
+    // Configurar o botão de confirmação do modal
+    document.getElementById("confirmar-universo").onclick = () => {
+        const inputUniverso = document.getElementById("input-universo").value;
+        let conjuntoUniverso;
+
+        if (inputUniverso.trim()) {
+            // Usar o conjunto universo fornecido pelo usuário
+            conjuntoUniverso = new Set(inputUniverso.split(",").map((item) => item.trim()));
+        } else {
+            // Usar a união das listas como conjunto universo
+            conjuntoUniverso = new Set();
+            listas.forEach((lista) => {
+                lista.forEach((elemento) => conjuntoUniverso.add(elemento));
+            });
+        }
+
+        // Fechar o modal
+        fecharModalUniverso();
+
+        // Enviar os dados para o backend
+        fetch("/calcular-lei-de-morgan", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                listas: listas.map((lista) => Array.from(lista)),
+                conjuntoUniverso: Array.from(conjuntoUniverso),
+            }),
+        })
+            .then((response) => response.text())
+            .then((resultado) => {
+                document.getElementById("resultado").innerText = resultado;
+            })
+            .catch((error) => {
+                exibirMensagem("Erro ao calcular a Lei de Morgan.", "erro");
+            });
+    };
+}
+
 // Função para resetar tudo
 function resetarTudo() {
     document.getElementById("resultado").innerText = "";
@@ -181,6 +254,25 @@ document.getElementById("salvar-listas").addEventListener("click", salvarListas)
 document.getElementById("resetar-tudo").addEventListener("click", resetarTudo);
 document.getElementById("calcular-intersecao").addEventListener("click", calcularIntersecao);
 document.getElementById("calcular-uniao").addEventListener("click", calcularUniao);
+document.getElementById("calcular-lei-de-morgan").addEventListener("click", calcularLeiDeMorgan);
+
+// Fechar o modal ao clicar no "X"
+document.querySelector(".fechar-modal").addEventListener("click", fecharModalUniverso);
+
+// Fechar o modal ao clicar fora dele
+window.addEventListener("click", (event) => {
+    const modal = document.getElementById("modal-universo");
+    if (event.target === modal) {
+        fecharModalUniverso();
+    }
+});
 
 // Carrega as listas salvas ao carregar a página
 document.addEventListener("DOMContentLoaded", carregarListasSalvas);
+
+// Evita que o dropdown feche ao clicar nos botões internos
+document.querySelectorAll(".dropdown-conteudo button").forEach((botao) => {
+    botao.addEventListener("click", (event) => {
+        event.stopPropagation(); // Impede que o clique se propague para o dropdown
+    });
+});

@@ -25,6 +25,7 @@
                 <div class="dropdown-conteudo">
                     <button type="button" id="calcular-intersecao">Calcular Interseção</button>
                     <button type="button" id="calcular-uniao">Calcular União</button>
+                    <button type="button" id="calcular-lei-de-morgan">Calcular Lei de Morgan</button>
                 </div>
             </div>
         </div>
@@ -40,5 +41,19 @@
             <img src="/static/images/icon.png" alt="Ícone" class="footer-icon">
         </div>
     </form>
+
+    <!-- Modal para o conjunto universo -->
+    <div id="modal-universo" class="modal">
+        <div class="modal-conteudo">
+            <span class="fechar-modal">&times;</span>
+            <h2>Definir Conjunto Universo</h2>
+            <p>
+                Insira os elementos do conjunto universo separados por vírgula (ex: 1,2,3,4,5,6).<br>
+                Caso não seja informado, será utilizada a união das listas como conjunto universo.
+            </p>
+            <input type="text" id="input-universo" placeholder="Ex: 1,2,3,4,5,6">
+            <button type="button" id="confirmar-universo">Confirmar</button>
+        </div>
+    </div>
 </body>
 </html>
